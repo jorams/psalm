@@ -1304,10 +1304,19 @@ class Codebase
                 : 0;
             $end_pos = $end_pos_excluding_whitespace + $num_whitespace_bytes;
 
-            if ($offset - $end_pos === 2 || $offset - $end_pos === 3) {
-                $candidate_gap = substr($file_contents, $end_pos, 2);
+            $candidate_gap = substr($file_contents, $end_pos, 2);
 
-                if ($candidate_gap === '->' || $candidate_gap === '::') {
+            if ($candidate_gap === '->' || $candidate_gap === '::') {
+                $gap_length = strlen($candidate_gap);
+                $num_bytes_including_name = preg_match(
+                    '/\G\s*(?:[a-zA-Z_][\\a-zA-Z_0-9]*)?$/',
+                    $file_contents,
+                    $matches,
+                    0,
+                    $end_pos + $gap_length
+                ) ? strlen($matches[0]) : 0;
+
+                if ($end_pos + $gap_length + $num_bytes_including_name >= $offset) {
                     $gap = $candidate_gap;
                     $recent_type = $possible_type;
 
